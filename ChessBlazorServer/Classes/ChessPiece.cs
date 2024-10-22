@@ -9,6 +9,7 @@ namespace ChessBlazorServer.Classes
         public (string Character, string Number) Position { get; set; }
         public bool IsCaptured { get; set; }
         public bool HasMoved { get; set; }
+        public List<(int, int)> MoveList { get; set; }
 
         public ChessPiece(string name, string color, string character, string number)
         {
@@ -17,8 +18,8 @@ namespace ChessBlazorServer.Classes
             Position = (character, number);
             IsCaptured = false;
             HasMoved = false;
+            MoveList = new List<(int, int)>();
         }
-
 
         // Method to move a piece to a new position
         public void NewPosition(string newCharacter, string newNumber)
