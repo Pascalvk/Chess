@@ -30,7 +30,7 @@
         // Converts from number to algebra
         public string ConvertCordsToAlgebraicNotation(int xCord, int yCord)
         {
-            char file = (char)('A' + xCord); // Convert file number to corresponding letter
+            char file = (char)('a' + xCord); // Convert file number to corresponding letter
             int rank = 8 - yCord; // Omrekenen naar schaaknotatie
             return $"{file}{rank}";
         }

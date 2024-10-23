@@ -5,26 +5,28 @@ namespace ChessBlazorServer.Classes
     public class ChessPiece
     {
         public string Name { get; set; }
+        public string SVGName { get; set; }
         public string Color { get; set; }
-        public (string Character, string Number) Position { get; set; }
+        public (int XCord, int YCord) Position { get; set; }
         public bool IsCaptured { get; set; }
         public bool HasMoved { get; set; }
         public List<(int, int)> MoveList { get; set; }
 
-        public ChessPiece(string name, string color, string character, string number)
+        public ChessPiece(string name, string svgName, string color, int xCord, int yCord)
         {
             Name = name;
+            SVGName = svgName;
             Color = color;
-            Position = (character, number);
+            Position = (xCord, yCord);
             IsCaptured = false;
             HasMoved = false;
             MoveList = new List<(int, int)>();
         }
 
         // Method to move a piece to a new position
-        public void NewPosition(string newCharacter, string newNumber)
+        public void NewPosition(int newxCord, int newyCord)
         {
-            Position = (newCharacter, newNumber);
+            Position = (newxCord, newyCord);
         }
 
         // Method to capture this piece

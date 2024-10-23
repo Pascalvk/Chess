@@ -8,4 +8,8 @@ Console.WriteLine("Hello, World!");
 NotationConverter converter = new();
 converter.DebugConsoleDictionraries();
 
-Console.WriteLine(converter.algebraicToCoord["A1"]);
+//Console.WriteLine(converter.algebraicToCoord["A1"]);
+Console.WriteLine();
+
+Board board = new();
+board.DebugPrintBoard();

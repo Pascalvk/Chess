@@ -2,7 +2,7 @@
 {
     public class Queen : ChessPiece
     {
-        public Queen(string name, string color, string character, string number) : base(name, color, character, number)
+        public Queen(string name, string svgName, string color, int xCord, int yCord) : base(name, svgName, color, xCord, yCord)
         {
 
         }
