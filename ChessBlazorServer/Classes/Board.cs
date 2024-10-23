@@ -63,21 +63,21 @@
         // Moves a piece to a new location; Note: No logic checks inside this method
         public void MovePieceToNewPositionOnBoard(int currentRow, int currentCol, int newRow, int newCol)
         {
-            grid[newXCord, newYCord] = grid[currentXCord, currentYCord];
-            grid[currentXCord, currentYCord] = null;
-            grid[newXCord, newYCord].NewPosition(newXCord, newYCord);
+            grid[newRow, newCol] = grid[currentRow, currentCol];
+            grid[currentRow, currentCol] = null;
+            grid[newRow, newCol].NewPosition(newRow, newCol);
         }
 
         // Is the move withing bounds of the board
-        public bool IsWithinBounds(int x, int y)
+        public bool IsWithinBounds(int row, int col)
         {
-            return x >= 0 && x < BoardSize && y >= 0 && y < BoardSize;
+            return row >= 0 && row < BoardSize && col >= 0 && col < BoardSize;
         }
 
         // Gets a piece from a cord
-        public ChessPiece GetPieceAt(int x, int y)
+        public ChessPiece GetPieceAt(int row, int col)
         {
-            return grid[x, y];
+            return grid[row, col];
         }
 
         // Use to print a board to console
