@@ -61,6 +61,13 @@ namespace ChessBlazorServer.Classes
             }
         }
 
+
+        // Only used for pawn
+        public virtual void ChangeEnPassantStatus(bool status)
+        {
+
+        }
+
         // Method to move a piece to a new position
         public void NewPosition(int newRow, int newCol)
         {

@@ -31,3 +31,13 @@ board.MovePieceToNewPositionOnBoard(5, 3, x, y);
 board.DebugPrintBoard();
 enne.DebugPrintMoveListToConsole();
 
+
+ChessPiece wp = board.GetPieceAt(6, 0);
+ChessPiece bp = board.GetPieceAt(1, 0);
+
+board.MovePieceToNewPositionOnBoard(1, 0, 3, 0);
+board.MovePieceToNewPositionOnBoard(6, 0, 3, 1);
+board.DebugPrintBoard();
+bp.ChangeEnPassantStatus(true);
+wp.PossibleMoves(board);
+wp.DebugPrintMoveListToConsole();
