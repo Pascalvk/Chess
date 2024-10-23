@@ -2,7 +2,7 @@
 {
     public class Board
     {
-        private const int BoardSize = 8;
+        public const int BoardSize = 8;
         private ChessPiece[,] grid;
 
         public Board()
@@ -60,6 +60,25 @@
             grid[0, 4] = new King("K", "bk", "black", 0, 4);
         }
 
+        // Moves a piece to a new location; Note: No logic checks inside this method
+        public void MovePieceToNewPositionOnBoard(int currentXCord, int currentYCord, int newXCord, int newYCord)
+        {
+            grid[newXCord, newYCord] = grid[currentXCord, currentYCord];
+            grid[currentXCord, currentYCord] = null;
+            grid[newXCord, newYCord].NewPosition(newXCord, newYCord);
+        }
+
+        // Is the move withing bounds of the board
+        public bool IsWithinBounds(int x, int y)
+        {
+            return x >= 0 && x < BoardSize && y >= 0 && y < BoardSize;
+        }
+
+        // Gets a piece from a cord
+        public ChessPiece GetPieceAt(int x, int y)
+        {
+            return grid[x, y];
+        }
 
         // Use to print a board to console
         public void DebugPrintBoard()

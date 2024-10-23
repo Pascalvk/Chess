@@ -13,3 +13,16 @@ Console.WriteLine();
 
 Board board = new();
 board.DebugPrintBoard();
+
+board.MovePieceToNewPositionOnBoard(7, 3, 5, 3);
+board.DebugPrintBoard();
+ChessPiece enne = board.GetPieceAt(5, 3);
+Console.WriteLine(enne.Position);
+Console.WriteLine(enne.Name);
+
+
+
+enne.PossibleMoves(board);
+Console.WriteLine(enne.MoveList.Count);
+enne.DebugPrintMoveListToConsole();
+

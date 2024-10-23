@@ -7,12 +7,22 @@
 
         }
 
-        public void PossibleMoves()
+        public override void PossibleMoves(Board board)
         {
+            (int startX, int startY) = this.Position;
+            var directions = new List<(int xChange, int yChange)>
+            {
+                (-1, -1), // Diagonal left up
+                (-1, 1),  // Diagonal right up
+                (1, -1),  // Diagonal left down
+                (1, 1)    // Diagonal right down
+            };
 
+            // Loop through each direction and calculate possible moves
+            foreach (var (xChange, yChange) in directions)
+            {
+                CalculateMovesInDirection(board, startX, startY, xChange, yChange);
+            }
         }
-
-
-
     }
 }
