@@ -61,7 +61,7 @@
         }
 
         // Moves a piece to a new location; Note: No logic checks inside this method
-        public void MovePieceToNewPositionOnBoard(int currentXCord, int currentYCord, int newXCord, int newYCord)
+        public void MovePieceToNewPositionOnBoard(int currentRow, int currentCol, int newRow, int newCol)
         {
             grid[newXCord, newYCord] = grid[currentXCord, currentYCord];
             grid[currentXCord, currentYCord] = null;

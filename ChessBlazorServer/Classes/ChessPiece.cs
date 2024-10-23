@@ -7,17 +7,17 @@ namespace ChessBlazorServer.Classes
         public string Name { get; set; }
         public string SVGName { get; set; }
         public string Color { get; set; }
-        public (int XCord, int YCord) Position { get; set; }
+        public (int Row, int Col) Position { get; set; }
         public bool IsCaptured { get; set; }
         public bool HasMoved { get; set; }
         public List<(int, int)> MoveList { get; set; }
 
-        public ChessPiece(string name, string svgName, string color, int xCord, int yCord)
+        public ChessPiece(string name, string svgName, string color, int row, int col)
         {
             Name = name;
             SVGName = svgName;
             Color = color;
-            Position = (xCord, yCord);
+            Position = (row, col);
             IsCaptured = false;
             HasMoved = false;
             MoveList = new List<(int, int)>();
@@ -29,23 +29,24 @@ namespace ChessBlazorServer.Classes
 
         }
 
-        public void CalculateMovesInDirection(Board board, int startX, int startY, int xChange, int yChange)
+        // Is used within specific piece classes to calculate the possible moves; can be overwriten bij classes
+        public virtual void CalculateMovesInDirection(Board board, int startRow, int startCol, int rowChange, int colChange)
         {
-            int x = startX + xChange;
-            int y = startY + yChange;
+            int row = startRow + rowChange;
+            int col = startCol + colChange;
 
-            while (board.IsWithinBounds(x, y))
+            while (board.IsWithinBounds(row, col))
             {
-                var pieceAtPosition = board.GetPieceAt(x, y);
+                var pieceAtPosition = board.GetPieceAt(row, col);
                 // No piece
                 if (pieceAtPosition == null)
                 {
-                    this.AddToPossibleMoveList(x, y);
+                    this.AddToPossibleMoveList(row, col);
                 }
                 // Opponent
                 else if (pieceAtPosition.Color != this.Color)
                 {
-                    this.AddToPossibleMoveList(x, y);
+                    this.AddToPossibleMoveList(row, col);
                     break;
                 }
                 // Own Piece
@@ -54,16 +55,16 @@ namespace ChessBlazorServer.Classes
                     break;
                 }
 
-                // Update x and y for the next iteration
-                x += xChange;
-                y += yChange;
+                // Update row and col for the next iteration
+                row += rowChange;
+                col += colChange;
             }
         }
 
         // Method to move a piece to a new position
-        public void NewPosition(int newxCord, int newyCord)
+        public void NewPosition(int newRow, int newCol)
         {
-            Position = (newxCord, newyCord);
+            Position = (newRow, newCol);
         }
 
         // Method to capture this piece
@@ -79,9 +80,9 @@ namespace ChessBlazorServer.Classes
         }
 
         // method to add moves to the list
-        public void AddToPossibleMoveList(int xCord, int yCord)
+        public void AddToPossibleMoveList(int row, int col)
         {
-            MoveList.Add((xCord, yCord));
+            MoveList.Add((row, col));
         }
 
         // Method to check if a move is valid

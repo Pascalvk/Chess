@@ -14,7 +14,7 @@ Console.WriteLine();
 Board board = new();
 board.DebugPrintBoard();
 
-board.MovePieceToNewPositionOnBoard(7, 3, 5, 3);
+board.MovePieceToNewPositionOnBoard(7, 1, 5, 3);
 board.DebugPrintBoard();
 ChessPiece enne = board.GetPieceAt(5, 3);
 Console.WriteLine(enne.Position);
@@ -24,5 +24,10 @@ Console.WriteLine(enne.Name);
 
 enne.PossibleMoves(board);
 Console.WriteLine(enne.MoveList.Count);
+(int x, int y) = enne.MoveList[0];
+Console.WriteLine(x);
+Console.WriteLine(y);
+board.MovePieceToNewPositionOnBoard(5, 3, x, y);
+board.DebugPrintBoard();
 enne.DebugPrintMoveListToConsole();
 

@@ -2,7 +2,7 @@
 {
     public class King : ChessPiece
     {
-        public King(string name, string svgName, string color, int xCord, int yCord) : base(name, svgName, color, xCord, yCord)
+        public King(string name, string svgName, string color, int row, int col) : base(name, svgName, color, row, col)
         {
 
         }
