@@ -13,6 +13,20 @@
             this.CanBeTakenEnPassant = status;
         }
 
+        public override ChessPiece Clone()
+        {
+            // Clone the Pawn and copy the EnPassant status
+            Pawn clonedPawn = new Pawn(this.Name, this.SVGName, this.Color, this.Position.Row, this.Position.Col)
+            {
+                IsCaptured = this.IsCaptured,
+                HasMoved = this.HasMoved,
+                CanBeTakenEnPassant = this.CanBeTakenEnPassant,
+                MoveList = new List<(int, int)>(this.MoveList)
+            };
+
+            return clonedPawn;
+        }
+
         public override void PossibleMoves(Board board)
         {
             (int startRow, int startCol) = this.Position;

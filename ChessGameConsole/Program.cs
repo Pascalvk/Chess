@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using ChessBlazorServer.Classes;
+using System.Reflection;
 
 Console.WriteLine("Hello, World!");
 
@@ -41,3 +42,16 @@ board.DebugPrintBoard();
 bp.ChangeEnPassantStatus(true);
 wp.PossibleMoves(board);
 wp.DebugPrintMoveListToConsole();
+
+board.MovePieceToNewPositionOnBoard(0, 4, 5, 4);
+ChessPiece bk = board.GetPieceAt(5, 4);
+board.UpdateUnderAttackPositions();
+bk.PossibleMoves(board);
+board.DebugPrintBoard();
+bk.DebugPrintMoveListToConsole();
+
+
+MoveSimulator Sim = new(board);
+Console.WriteLine();
+board.DebugPrintBoard();
+Sim.DebugPrintBoard();

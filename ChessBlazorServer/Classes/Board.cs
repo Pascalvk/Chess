@@ -4,10 +4,12 @@
     {
         public const int BoardSize = 8;
         private ChessPiece[,] grid;
+        public List<(int row, int col)> UnderAttackPositions { get; set; }
 
         public Board()
         {
             grid = new ChessPiece[BoardSize, BoardSize];
+            UnderAttackPositions = new List<(int, int)>();
             SetupBoard();
         }
 
@@ -68,6 +70,12 @@
             grid[newRow, newCol].NewPosition(newRow, newCol);
         }
 
+        // Just place a piece at the location
+        public void SetPieceAt(int row, int col, ChessPiece Piece)
+        {
+            grid[row, col] = Piece;
+        }
+
         // Is the move withing bounds of the board
         public bool IsWithinBounds(int row, int col)
         {
@@ -78,6 +86,36 @@
         public ChessPiece GetPieceAt(int row, int col)
         {
             return grid[row, col];
+        }
+
+        // Method to fill the list of attacked positions to current board; No uses yet; maybe use as helper
+        public void UpdateUnderAttackPositions()
+        {
+            UnderAttackPositions.Clear();
+            for (int row = 0; row < BoardSize; row++)
+            {
+                for (int col = 0; col < BoardSize; col++)
+                {
+                    var piece = GetPieceAt(row, col);
+                    if (piece != null)
+                    {
+                        // Skips King; maybe delete this; still testing needed
+                        if (piece is King)
+                        {
+                            continue; 
+                        }
+                        piece.PossibleMoves(this);
+                        UnderAttackPositions.AddRange(piece.MoveList);
+                    }
+                }
+            }
+            // Remove duplicates
+            UnderAttackPositions = UnderAttackPositions.Distinct().ToList();
+        }
+
+        public bool IsUnderAttack(int row, int col)
+        {
+            return UnderAttackPositions.Contains((row, col));
         }
 
         // Use to print a board to console

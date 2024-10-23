@@ -92,6 +92,19 @@ namespace ChessBlazorServer.Classes
             MoveList.Add((row, col));
         }
 
+        public virtual ChessPiece Clone()
+        {
+                        ChessPiece clonedPiece = new ChessPiece(this.Name, this.SVGName, this.Color, this.Position.Row, this.Position.Col)
+            {
+                IsCaptured = this.IsCaptured,
+                HasMoved = this.HasMoved,
+                MoveList = new List<(int, int)>(this.MoveList) // Diepe kopie van de MoveList
+            };
+
+            return clonedPiece;
+        }
+
+
         // Method to check if a move is valid
         public bool IsMoveValid(List<(int, int)> MoveList, (int, int) MoveToLocation)
         {           

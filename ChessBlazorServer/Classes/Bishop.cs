@@ -9,8 +9,8 @@
 
         public override void PossibleMoves(Board board)
         {
-            (int startX, int startY) = this.Position;
-            var directions = new List<(int xChange, int yChange)>
+            (int startRow, int startCol) = this.Position;
+            var directions = new List<(int rowChange, int colChange)>
             {
                 (-1, -1), // Diagonal left up
                 (-1, 1),  // Diagonal right up
@@ -19,9 +19,9 @@
             };
 
             // Loop through each direction and calculate possible moves
-            foreach (var (xChange, yChange) in directions)
+            foreach (var (rowChange, colChange) in directions)
             {
-                CalculateMovesInDirection(board, startX, startY, xChange, yChange);
+                CalculateMovesInDirection(board, startRow, startCol, rowChange, colChange);
             }
         }
     }
