@@ -9,25 +9,25 @@
 
         public override void PossibleMoves(Board board)
         {
-            (int startX, int startY) = this.Position;
+            (int startRow, int startCol) = this.Position;
 
-            var directions = new List<(int xChange, int yChange)>
+            var directions = new List<(int rowChange, int colChange)>
         {
             (2, 1), (2, -1), (-2, 1), (-2, -1),
             (1, 2), (1, -2), (-1, 2), (-1, -2)
         };
 
-            foreach (var (xChange, yChange) in directions)
+            foreach (var (rowChange, colChange) in directions)
             {
-                int newX = startX + xChange;
-                int newY = startY + yChange;
+                int newRow = startRow + rowChange;
+                int newCol = startCol + colChange;
 
-                if (board.IsWithinBounds(newX, newY))
+                if (board.IsWithinBounds(newRow, newCol))
                 {
-                    var pieceAtPosition = board.GetPieceAt(newX, newY);
+                    var pieceAtPosition = board.GetPieceAt(newRow, newCol);
                     if (pieceAtPosition == null || pieceAtPosition.Color != this.Color)
                     {
-                        this.AddToPossibleMoveList(newX, newY);
+                        this.AddToPossibleMoveList(newRow, newCol);
                     }
                 }
             }
