@@ -13,6 +13,12 @@
             SetupBoard();
         }
 
+        // Empty constructor (used for cloning)
+        public Board(bool empty)
+        {
+            grid = new ChessPiece[BoardSize, BoardSize];
+        }
+
         public void SetupBoard()
         {     
             // White pieces
@@ -105,7 +111,7 @@
                             continue; 
                         }
                         piece.PossibleMoves(this);
-                        UnderAttackPositions.AddRange(piece.MoveList);
+                        UnderAttackPositions.AddRange(piece.AttackList);
                     }
                 }
             }
@@ -115,6 +121,7 @@
 
         public bool IsUnderAttack(int row, int col)
         {
+            
             return UnderAttackPositions.Contains((row, col));
         }
 
@@ -136,6 +143,14 @@
                     }
                 }
                 Console.WriteLine(); 
+            }
+        }
+
+        public void DebugPrintUnderAttackList()
+        {
+            foreach (var attackedPos in UnderAttackPositions)
+            {
+                Console.WriteLine(attackedPos);
             }
         }
     }

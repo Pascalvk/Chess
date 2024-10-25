@@ -1,58 +1,29 @@
 ﻿namespace ChessBlazorServer.Classes
 {
-    public class MoveSimulator
+    public class MoveSimulator : Board
     {
         public Board SimulatedBoard { get; set; }
 
-        public MoveSimulator(Board originalBoard)
+        public MoveSimulator(Board originalBoard) : base(true) 
         {
-            SimulatedBoard = CloneBoard(originalBoard);
+            CloneBoard(originalBoard);
         }
 
         // Clone board
-        public Board CloneBoard(Board originalBoard)
+        private void CloneBoard(Board originalBoard)
         {
-            // Make a deep copy
-            Board clone = originalBoard;
-            for (int row = 0; row < Board.BoardSize; row++)
+            for (int row = 0; row < BoardSize; row++)
             {
-                for (int col = 0; col < Board.BoardSize; col++)
+                for (int col = 0; col < BoardSize; col++)
                 {
                     var piece = originalBoard.GetPieceAt(row, col);
                     if (piece != null)
                     {
-                        // Copies the piece to the board
-                        clone.SetPieceAt(row, col, piece.Clone());
+                        SetPieceAt(row, col, piece.Clone());
                     }
                 }
             }
-            return clone;
-        }
-
-        // Use to print a board to console
-        public void DebugPrintBoard()
-        {
-            Console.WriteLine("Board state:");
-
-            for (int row = 0; row < Board.BoardSize; row++)
-            {
-                for (int col = 0; col < Board.BoardSize; col++)
-                {
-                    ChessPiece piece = SimulatedBoard.GetPieceAt(row, col);
-
-                    if (piece == null)
-                    {
-                        Console.Write(". ");  
-                    }
-                    else
-                    {
-                        Console.Write(piece.Name[0] + " ");  
-                    }
-                }
-                Console.WriteLine();
-            }
-
-            Console.WriteLine();
+            UnderAttackPositions = new List<(int, int)>(originalBoard.UnderAttackPositions);
         }
     }
 }

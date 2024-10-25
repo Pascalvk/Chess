@@ -11,6 +11,7 @@ namespace ChessBlazorServer.Classes
         public bool IsCaptured { get; set; }
         public bool HasMoved { get; set; }
         public List<(int, int)> MoveList { get; set; }
+        public List<(int, int)> AttackList { get; set; }
 
         public ChessPiece(string name, string svgName, string color, int row, int col)
         {
@@ -21,6 +22,7 @@ namespace ChessBlazorServer.Classes
             IsCaptured = false;
             HasMoved = false;
             MoveList = new List<(int, int)>();
+            AttackList = new List<(int, int)>();
         }
 
         // Placeholder Method to override
@@ -42,11 +44,13 @@ namespace ChessBlazorServer.Classes
                 if (pieceAtPosition == null)
                 {
                     this.AddToPossibleMoveList(row, col);
+                    this.AddToAttackList(row, col);
                 }
                 // Opponent
                 else if (pieceAtPosition.Color != this.Color)
                 {
                     this.AddToPossibleMoveList(row, col);
+                    this.AddToAttackList(row, col);
                     break;
                 }
                 // Own Piece
@@ -92,13 +96,19 @@ namespace ChessBlazorServer.Classes
             MoveList.Add((row, col));
         }
 
+        // method to add attacks to the list
+        public void AddToAttackList(int row, int col)
+        {
+            AttackList.Add((row, col));
+        }
+
         public virtual ChessPiece Clone()
         {
-                        ChessPiece clonedPiece = new ChessPiece(this.Name, this.SVGName, this.Color, this.Position.Row, this.Position.Col)
+            ChessPiece clonedPiece = new ChessPiece(this.Name, this.SVGName, this.Color, this.Position.Row, this.Position.Col)
             {
                 IsCaptured = this.IsCaptured,
                 HasMoved = this.HasMoved,
-                MoveList = new List<(int, int)>(this.MoveList) // Diepe kopie van de MoveList
+                MoveList = new List<(int, int)>(this.MoveList) 
             };
 
             return clonedPiece;

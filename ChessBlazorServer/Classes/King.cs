@@ -30,10 +30,20 @@
         }
 
 
-        // not done yet; Make it so it can do a +1 gamestate move
-        /*
+        // not done yet; Make it so it can do a +1 gamestate move    
         public override void CalculateMovesInDirection(Board board, int startRow, int startCol, int rowChange, int colChange)
         {
+
+            // Haal het stuk op de startpositie op
+            var piece = board.GetPieceAt(startRow, startCol);
+
+            // Controleer of het stuk niet null is
+            if (piece == null)
+            {
+                Console.WriteLine("Error: Geen stuk op startpositie ({0}, {1})", startRow, startCol);
+                return;
+            }
+
             // New position
             int newRow = startRow + rowChange;
             int newCol = startCol + colChange;
@@ -43,13 +53,22 @@
                 // if empty or enemy
                 if (pieceAtPosition == null || pieceAtPosition.Color != this.Color)
                 {
-                    if (board.IsUnderAttack(newRow, newCol) == false)
+                    MoveSimulator copiedBoard = new(board);
+                    copiedBoard.MovePieceToNewPositionOnBoard(startRow, startCol, newRow, newCol);
+                    //copiedBoard.DebugPrintBoard();
+                    copiedBoard.UpdateUnderAttackPositions();
+                    //Console.WriteLine("hoi");
+
+                    bool testing = copiedBoard.IsUnderAttack(newRow, newCol);
+                    //Console.WriteLine( testing);
+                    if (copiedBoard.IsUnderAttack(newRow, newCol) == false)
                     {
+
                         this.AddToPossibleMoveList(newRow, newCol);
                     }
                 }
             }
         }
-        */
+        
     }
 }

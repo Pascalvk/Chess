@@ -28,6 +28,7 @@
                     if (pieceAtPosition == null || pieceAtPosition.Color != this.Color)
                     {
                         this.AddToPossibleMoveList(newRow, newCol);
+                        this.AddToAttackList(newRow, newRow);
                     }
                 }
             }

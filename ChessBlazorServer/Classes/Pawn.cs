@@ -43,7 +43,7 @@
 
             // If on start position a Pawn can move 2 squares
             int doubleMoveRow = startRow + 2 * direction;
-            if (this.HasMoved == false && board.IsWithinBounds(doubleMoveRow, startCol) 
+            if (this.HasMoved == false && board.IsWithinBounds(doubleMoveRow, startCol)  
                 && board.GetPieceAt(newRow, startCol) == null
                 && board.GetPieceAt(doubleMoveRow, startCol) == null)
             {
@@ -60,6 +60,7 @@
                 {
                     this.AddToPossibleMoveList(attackLeftRow, attackLeftCol);
                 }
+                this.AddToAttackList(attackLeftRow, attackLeftCol);
             }
 
             // Attack piece diagonal right
@@ -71,7 +72,9 @@
                 if (rightPiece != null && rightPiece.Color != this.Color)
                 {
                     this.AddToPossibleMoveList(attackRightRow, attackRightCol);
+
                 }
+                this.AddToAttackList(newRow, attackRightCol);
             }
 
             // En passant check

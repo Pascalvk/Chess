@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using ChessBlazorServer.Classes;
+using ChessGameConsole;
 using System.Reflection;
 
 Console.WriteLine("Hello, World!");
@@ -43,15 +44,66 @@ bp.ChangeEnPassantStatus(true);
 wp.PossibleMoves(board);
 wp.DebugPrintMoveListToConsole();
 
-board.MovePieceToNewPositionOnBoard(0, 4, 5, 4);
-ChessPiece bk = board.GetPieceAt(5, 4);
-board.UpdateUnderAttackPositions();
-bk.PossibleMoves(board);
+Console.WriteLine("Hallooooo");
+
+board.MovePieceToNewPositionOnBoard(0, 4, 4, 4);
+MoveSimulator Sim = new(board);
 board.DebugPrintBoard();
+Sim.DebugPrintBoard();
+ChessPiece bk = board.GetPieceAt(4, 4);
+bk.PossibleMoves(board);
+
+board.DebugPrintBoard();
+Sim.DebugPrintBoard();
+Sim.DebugPrintBoard();
 bk.DebugPrintMoveListToConsole();
 
 
+Console.WriteLine();
+
+TestMethods testMethods = new TestMethods();
+//testMethods.EmptyBoardForTestingAttackedPositions();
+
+
+/*
+board.MovePieceToNewPositionOnBoard(0, 4, 5, 4);
+MoveSimulator Sim = new(board);
+board.DebugPrintBoard();
+Sim.DebugPrintBoard();
+ChessPiece bk = board.GetPieceAt(5, 4);
+bk.PossibleMoves(board);
+bk.DebugPrintMoveListToConsole();
+
+
+
+
+
+/*
+Console.WriteLine("------------------");
+board.UpdateUnderAttackPositions();
+foreach (var moves in board.UnderAttackPositions)
+{
+    Console.WriteLine(moves);
+}
+
+/*
+board.MovePieceToNewPositionOnBoard(0, 4, 6, 3);
+ChessPiece bk = board.GetPieceAt(6, 3);
+//bk.PossibleMoves(board);
+board.DebugPrintBoard();
+Console.WriteLine(bk.Position);
+/*
+board.UpdateUnderAttackPositions();
+
+board.DebugPrintBoard();
+bk.DebugPrintMoveListToConsole();
+*/
+
+/*
 MoveSimulator Sim = new(board);
 Console.WriteLine();
 board.DebugPrintBoard();
 Sim.DebugPrintBoard();
+Sim.SimulateMove(0, 7, 5, 5);
+Sim.DebugPrintBoard();
+*/
