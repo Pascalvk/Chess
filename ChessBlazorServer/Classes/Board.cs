@@ -1,15 +1,20 @@
-﻿namespace ChessBlazorServer.Classes
+﻿using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
+
+namespace ChessBlazorServer.Classes
 {
     public class Board
     {
         public const int BoardSize = 8;
         private ChessPiece[,] grid;
         public List<(int row, int col)> UnderAttackPositions { get; set; }
-
+        public ChessPiece EmptyChessPiece { get; set; }
+       
         public Board()
         {
             grid = new ChessPiece[BoardSize, BoardSize];
             UnderAttackPositions = new List<(int, int)>();
+            EmptyChessPiece = new ChessPiece("Empty", "", "", -1, -1);
             SetupBoard();
         }
 
@@ -21,6 +26,7 @@
 
         public void SetupBoard()
         {     
+            
             // White pieces
             grid[6, 0] = new Pawn("P", "wp", "white", 6, 0);
             grid[6, 1] = new Pawn("P", "wp", "white", 6, 1);
@@ -41,9 +47,9 @@
             grid[7, 5] = new Bishop("B", "wb", "white", 7, 5);
        
             grid[7, 3] = new Queen("Q", "wq", "white", 7, 3);
-
+                        
             grid[7, 4] = new King("K", "wk", "white", 7, 4);
-
+            
             // Black pieces
             grid[1, 0] = new Pawn("P", "bp", "black", 1, 0);
             grid[1, 1] = new Pawn("P", "bp", "black", 1, 1);
@@ -64,7 +70,7 @@
             grid[0, 5] = new Bishop("B", "bb", "black", 0, 5);
 
             grid[0, 3] = new Queen("Q", "bq", "black", 0, 3);
-
+            
             grid[0, 4] = new King("K", "bk", "black", 0, 4);
         }
 
@@ -82,6 +88,28 @@
             grid[row, col] = Piece;
         }
 
+        public void RemovePieceAt(int row, int col)
+        {
+            grid[row, col] = EmptyChessPiece;
+            grid[row, col] = EmptyChessPiece;
+        }
+
+        public ChessPiece GetEnPassantablePiece()
+        {
+            for (int row = 0; row < BoardSize; row++)
+            {
+                for (int col = 0; col < BoardSize; col++)
+                {
+                    ChessPiece piece = grid[row, col];
+                    if (piece is Pawn pawn && pawn.CanBeTakenEnPassant)
+                    {
+                        return piece;
+                    }
+                }
+            }
+            return null; 
+        }
+
         // Is the move withing bounds of the board
         public bool IsWithinBounds(int row, int col)
         {
@@ -91,12 +119,17 @@
         // Gets a piece from a cord
         public ChessPiece GetPieceAt(int row, int col)
         {
-            return grid[row, col];
+            ChessPiece piece = grid[row, col];
+            if (piece == null)
+            {
+                piece = EmptyChessPiece;
+            }
+            return piece;
         }
 
         // Method to fill the list of attacked positions to current board; No uses yet; maybe use as helper
-        public void UpdateUnderAttackPositions()
-        {
+        public void UpdateUnderAttackPositionsCurrentPlayerIs(string attackingColor = "", bool skipKing = false)
+        {            
             UnderAttackPositions.Clear();
             for (int row = 0; row < BoardSize; row++)
             {
@@ -105,13 +138,19 @@
                     var piece = GetPieceAt(row, col);
                     if (piece != null)
                     {
-                        // Skips King; maybe delete this; still testing needed
-                        if (piece is King)
+                        if (piece.Color == attackingColor)
                         {
-                            continue; 
+                            // Skips King; prevents infinite loop with PossibleAttackSquaresKing(this)
+                            // but makes sure to add attack squares so a king cant move into a king
+                            if (skipKing == true && piece is King)
+                            {
+                                piece.PossibleAttackSquaresKing(this, false);
+                                UnderAttackPositions.AddRange(piece.AttackList);
+                                continue;
+                            }
+                            piece.PossibleMoves(this);
+                            UnderAttackPositions.AddRange(piece.AttackList);
                         }
-                        piece.PossibleMoves(this);
-                        UnderAttackPositions.AddRange(piece.AttackList);
                     }
                 }
             }
@@ -120,8 +159,7 @@
         }
 
         public bool IsUnderAttack(int row, int col)
-        {
-            
+        {      
             return UnderAttackPositions.Contains((row, col));
         }
 
@@ -133,6 +171,13 @@
                 for (int col = 0; col < BoardSize; col++)
                 {
                     ChessPiece piece = grid[row, col];
+                    if (piece != null)
+                    {
+                        if (piece.Name == "Empty")
+                        {
+                            piece = null;
+                        }                     
+                    }
                     if (piece == null)
                     {
                         Console.Write(". "); 

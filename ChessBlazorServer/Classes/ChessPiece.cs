@@ -12,6 +12,8 @@ namespace ChessBlazorServer.Classes
         public bool HasMoved { get; set; }
         public List<(int, int)> MoveList { get; set; }
         public List<(int, int)> AttackList { get; set; }
+        public List<(int, int)> AttackingPieceList { get; set; }
+
 
         public ChessPiece(string name, string svgName, string color, int row, int col)
         {
@@ -23,12 +25,13 @@ namespace ChessBlazorServer.Classes
             HasMoved = false;
             MoveList = new List<(int, int)>();
             AttackList = new List<(int, int)>();
+            AttackingPieceList = new List<(int, int)>();
         }
 
         // Placeholder Method to override
         public virtual void PossibleMoves(Board board)
         {
-
+            
         }
 
         // Is used within specific piece classes to calculate the possible moves; can be overwriten bij classes
@@ -36,12 +39,11 @@ namespace ChessBlazorServer.Classes
         {
             int row = startRow + rowChange;
             int col = startCol + colChange;
-
             while (board.IsWithinBounds(row, col))
             {
-                var pieceAtPosition = board.GetPieceAt(row, col);
+                ChessPiece pieceAtPosition = board.GetPieceAt(row, col);
                 // No piece
-                if (pieceAtPosition == null)
+                if (pieceAtPosition == null || pieceAtPosition.Name == "Empty")
                 {
                     this.AddToPossibleMoveList(row, col);
                     this.AddToAttackList(row, col);
@@ -68,6 +70,17 @@ namespace ChessBlazorServer.Classes
 
         // Only used for pawn
         public virtual void ChangeEnPassantStatus(bool status)
+        {
+
+        }
+
+        public virtual void ChangeEnPassantStatusForAllPawnsToFalse(Board board)
+        {
+
+        }
+
+        // onlu used for king
+        public virtual void PossibleAttackSquaresKing(Board board, bool skipClear = false)
         {
 
         }
@@ -108,7 +121,9 @@ namespace ChessBlazorServer.Classes
             {
                 IsCaptured = this.IsCaptured,
                 HasMoved = this.HasMoved,
-                MoveList = new List<(int, int)>(this.MoveList) 
+                MoveList = new List<(int, int)>(this.MoveList), 
+                AttackList = new List<(int, int)>(this.AttackList),
+                AttackingPieceList = new List<(int, int)>(this.AttackingPieceList) 
             };
 
             return clonedPiece;
@@ -116,9 +131,9 @@ namespace ChessBlazorServer.Classes
 
 
         // Method to check if a move is valid
-        public bool IsMoveValid(List<(int, int)> MoveList, (int, int) MoveToLocation)
+        public bool IsMoveValid((int, int) MoveToLocation)
         {           
-            return MoveList.Contains(MoveToLocation);       
+            return this.MoveList.Contains(MoveToLocation);       
         }
 
         public void DebugPrintMoveListToConsole()
@@ -129,8 +144,36 @@ namespace ChessBlazorServer.Classes
             }
         }
 
+        public void DebugPrintAttackListToConsole()
+        {
+            foreach (var attack in this.AttackList)
+            {
+                Console.WriteLine(attack.ToString());
+            }
+        }
 
-
+        public virtual void FillAttackThisPiecesList(Board board)
+        {          
+            this.AttackingPieceList.Clear();
+            string oppenentColor = "";
+            if (this.Color == "white")
+            {
+                oppenentColor = "black";
+            }
+            if (this.Color == "black")
+            {
+                oppenentColor = "white";
+            }
+            //board.UpdateUnderAttackPositionsCurrentPlayerIs(oppenentColor);
+            foreach(var attack in this.AttackList)
+            {
+                ChessPiece chessPiece = board.GetPieceAt(attack.Item1, attack.Item2);
+                if(chessPiece.Color == oppenentColor)
+                {
+                    AttackingPieceList.Add(attack);
+                }
+            }
+        }
 
 
     }

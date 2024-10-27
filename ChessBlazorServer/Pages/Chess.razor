@@ -1,9 +1,183 @@
-﻿@page "/chess"
+﻿@using ChessBlazorServer.Classes
+@page "/chess"
 
+<link href="css/chessGame.css" rel="stylesheet">
 <h3>Chess</h3>
 
 Als je dit leest werkt de link
 
+
+<div class=""></div>
+
+<div class="chess-board">
+    @for (int row = 0; row < Board.BoardSize; row++)
+    {
+        @for (int col = 0; col < Board.BoardSize; col++)
+        {                 
+            ChessPiece thisPiece = board.GetPieceAt(row, col);
+            (int, int) id = (row, col);
+            string possibleMoveDot = "";
+            string backGroundSquare = "";
+
+            @if ((row + col) % 2 == 0)
+            {
+                backGroundSquare = "light-square";
+            }
+            else
+            {
+                backGroundSquare = "dark-square";
+            }
+
+            @if (selectedPiece != null)
+            {
+                bool isAttackingPosition = selectedPiece.AttackingPieceList.Contains(id);
+                bool isMovePosition = selectedPiece.MoveList.Contains(id);
+
+                if (isAttackingPosition)
+                {
+                    possibleMoveDot = "TakeThisCircle";
+                }
+                else if (isMovePosition)
+                {
+                    possibleMoveDot = "PossibleMoveDot";
+                }
+
+                if (selectedPiece.Position == id)
+                {
+                    backGroundSquare = "select-square";
+                }
+            }
+
+
+            <div class="@backGroundSquare @thisPiece.SVGName" 
+            id="@id"
+            @onclick="() => OnClick(id)"
+            
+                
+            >
+                <div class="@possibleMoveDot"></div>
+            </div>
+        }
+    }
+</div>
+
+<div>@selectedPiece</div>
+<div> (row, col)
+    @if (selectedPiece != null)
+    {
+        //selectedPiece.FillAttackThisPiecesList(board);
+        @foreach (var moves in selectedPiece.AttackingPieceList)
+        {
+            <div>@moves</div>
+        }
+    }
+</div>
+
+
+
 @code {
+    Board board = new();
+    ChessPiece selectedPiece = null;
+    bool isSelected = false;
+    string currentPlayer = "white";
+
+    public void OnClick((int, int) id)
+    {
+        ChessPiece clickedPiece = board.GetPieceAt(id.Item1, id.Item2);
+
+        if (!isSelected)
+        {
+            SelectPiece(id);
+
+            if (selectedPiece != board.EmptyChessPiece && selectedPiece.Color == currentPlayer)
+            {
+                isSelected = true;
+            }
+        }
+
+        else if (isSelected && clickedPiece.Color == currentPlayer)
+        {
+            SelectPiece(id);
+        }
+        else
+        {
+            MoveLogic(id);
+        }
+    }
+
+
+    public void SelectPiece((int,int) id)
+    {
+        ChessPiece pieceAtLocation = board.GetPieceAt(id.Item1, id.Item2);
+        if (pieceAtLocation != board.EmptyChessPiece && pieceAtLocation.Color == currentPlayer)
+        {
+            selectedPiece = pieceAtLocation;
+            if (selectedPiece is King)
+            {
+                selectedPiece.PossibleAttackSquaresKing(board);
+                selectedPiece.PossibleMoves(board);
+                selectedPiece.FillAttackThisPiecesList(board);
+            }
+            else
+            {
+                selectedPiece.PossibleMoves(board);
+                selectedPiece.FillAttackThisPiecesList(board);
+            }
+        }
+        else
+        {
+            selectedPiece = board.EmptyChessPiece;
+        }
+    }
+
+    public void MoveLogic((int, int) moveToLocation)
+    {
+        // Everything in the if statement is a valid move
+        if (selectedPiece != board.EmptyChessPiece && selectedPiece.IsMoveValid(moveToLocation))
+        {
+            int currentRow = selectedPiece.Position.Row;
+            int currentCol = selectedPiece.Position.Col;
+
+            // Determine if the move is a single step or a double step
+            int rowDifference = moveToLocation.Item1 - currentRow;
+
+            // Check if it's a pawn and if it's moving 2 spaces
+            if (selectedPiece is Pawn pawn)
+            {
+
+                if (currentCol != moveToLocation.Item2)
+                {
+                    ChessPiece enPassantablePawn = board.GetEnPassantablePiece();
+                    if (enPassantablePawn != null)
+                    {
+                        int deleteRow = enPassantablePawn.Position.Row;
+                        int deleteCol = enPassantablePawn.Position.Col;
+                        board.RemovePieceAt(deleteRow, deleteCol);
+                    }
+                }
+                // Remove the can be taken en passant bool; only last 1 move for opponent
+                pawn.ChangeEnPassantStatusForAllPawnsToFalse(board);
+                // Marks the moved pawn as enpassantable
+                if (!pawn.HasMoved && Math.Abs(rowDifference) == 2)
+                {
+                    pawn.ChangeEnPassantStatus(true);
+                }
+
+            }
+
+            board.MovePieceToNewPositionOnBoard(currentRow, currentCol, moveToLocation.Item1, moveToLocation.Item2);
+            selectedPiece.MarkAsMoved();
+
+            currentPlayer = currentPlayer == "white" ? "black" : "white";
+
+            selectedPiece = board.EmptyChessPiece;
+            isSelected = false;
+        }
+        else
+        {
+            selectedPiece = board.EmptyChessPiece;
+            isSelected = false;
+        }
+    }
 
 }

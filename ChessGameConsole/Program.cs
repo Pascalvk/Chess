@@ -4,11 +4,42 @@ using ChessGameConsole;
 using System.Reflection;
 
 Console.WriteLine("Hello, World!");
+TestMethods testMethods = new TestMethods();
+
+testMethods.testInstantinCheck();
+/* 
+testMethods.testAgainstQueenandKing();
+
+/*
+//testMethods.testAgainst2KingsCloseby();
+
+Board board = new Board();
+board.DebugPrintBoard();
+ChessPiece wr = board.GetPieceAt(7, 7);
+wr.PossibleMoves(board);
+foreach (var move in wr.MoveList)
+{
+    Console.WriteLine(move);
+}
+Console.WriteLine("----------");
+foreach (var attack in wr.AttackList)
+{
+    Console.WriteLine(attack);
+}
 
 
 
+//testMethods.testAgainst2Kings();
+//testMethods.testAgainst2Rooks();
+//testMethods.TestKingAgainstPawns();
+
+
+
+
+
+/*
 NotationConverter converter = new();
-converter.DebugConsoleDictionraries();
+//converter.DebugConsoleDictionraries();
 
 //Console.WriteLine(converter.algebraicToCoord["A1"]);
 Console.WriteLine();
@@ -62,7 +93,9 @@ bk.DebugPrintMoveListToConsole();
 Console.WriteLine();
 
 TestMethods testMethods = new TestMethods();
-//testMethods.EmptyBoardForTestingAttackedPositions();
+testMethods.EmptyBoardForTestingAttackedPositions();
+Console.WriteLine("-------------------------------------------------");
+testMethods.TestKingAgainstPawns();
 
 
 /*

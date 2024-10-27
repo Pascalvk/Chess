@@ -16,7 +16,7 @@
             {
                 for (int col = 0; col < BoardSize; col++)
                 {
-                    var piece = originalBoard.GetPieceAt(row, col);
+                    ChessPiece piece = originalBoard.GetPieceAt(row, col);
                     if (piece != null)
                     {
                         SetPieceAt(row, col, piece.Clone());
