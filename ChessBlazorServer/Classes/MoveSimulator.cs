@@ -6,6 +6,7 @@
 
         public MoveSimulator(Board originalBoard) : base(true) 
         {
+            EmptyChessPiece = new ChessPiece("Empty", "", "", -1, -1);
             CloneBoard(originalBoard);
         }
 

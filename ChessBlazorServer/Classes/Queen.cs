@@ -43,6 +43,34 @@
             {
                 CalculateMovesInDirection(board, startRow, startCol, rowChange, colChange);
             }
+            foreach (var (rowChange, colChange) in directions)
+            {
+                CalculateAttacksInDirection(board, startRow, startCol, rowChange, colChange);
+            }
+            
+        }
+
+        public override void PossiblePiecesToAttack(Board board)
+        {
+            AttackingPieceList.Clear();
+            (int startRow, int startCol) = this.Position;
+            var directions = new List<(int rowChange, int colChange)>
+            {
+                (-1, 0), // Up
+                (1, 0),  // Down
+                (0, 1),  // Right
+                (0, -1), // Left
+                (-1, -1), // Diagonal left up
+                (-1, 1),  // Diagonal right up
+                (1, -1),  // Diagonal left down
+                (1, 1)    // Diagonal right down
+            };
+
+            // Loop through each direction and calculate possible moves
+            foreach (var (rowChange, colChange) in directions)
+            {
+                CalculateAttackingPiecesInDirection(board, startRow, startCol, rowChange, colChange);
+            }
         }
 
     }

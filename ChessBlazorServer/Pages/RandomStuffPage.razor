@@ -1,0 +1,46 @@
+﻿@using ChessBlazorServer.Classes
+@using System.Linq;
+@using System.Threading.Tasks;
+@page "/randomstuffpage";
+
+<h3>RandomStuffPage</h3>
+
+<div>
+    De id's zijn:
+    @foreach (var user in users)
+    {
+        <div>
+            @user.Id;
+            @user.Name;
+            @user.Email;
+        </div>
+
+    }
+</div>
+
+
+@code {
+    private static readonly HttpClient client = new();
+    List<User> users = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string apiUrl = "https://localhost:7122/api/User"; // Pas de URL aan naar je API
+        users = await GetUsersAsync(apiUrl);
+    }
+
+    public static async Task<List<User>> GetUsersAsync(string url)
+    {
+        try
+        {
+            var response = await client.GetFromJsonAsync<List<User>>(url);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            // Foutafhandeling als de API-aanroep mislukt
+            Console.WriteLine($"Er is een fout opgetreden: {ex.Message}");
+            return new List<User>();
+        }
+    }
+}

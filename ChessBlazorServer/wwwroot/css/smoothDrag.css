@@ -1,0 +1,49 @@
+﻿body {
+}
+
+.smoothDragContainer {
+    position: relative; 
+    width: 800px;
+    height: 800px;
+}
+
+.smoothDragBackgroundContainer {
+    width: 800px;
+    height: 800px;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    position: absolute;
+    z-index: 1;
+}
+
+.smoothDragOverlay {
+    width: 800px;
+    height: 800px;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    position: absolute; 
+    z-index: 2; 
+}
+
+
+.smoothDragSquare {
+    width: 100%;
+    height: 100%;
+}
+
+.smoothDragWhite {
+    background-color: #f0d9b5;
+}
+
+.smoothDragBlack {
+    background-color: #b58863;
+}
+
+.smoothWQ {
+    background-image: url('/SVG/Chess/wQ.svg');
+    width: 100%;
+    height: 100%;
+}
+

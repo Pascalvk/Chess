@@ -15,7 +15,7 @@ namespace ChessBlazorServer.Classes
         {
             Board board = new();
             // Update board UnderAttackPositions
-            board.UpdateUnderAttackPositionsCurrentPlayerIs(currentPlayer);
+            board.UpdateUnderAttackPositionsOpponentPlayerIs(currentPlayer);
 
 
             // Make a move; from the piece movelist

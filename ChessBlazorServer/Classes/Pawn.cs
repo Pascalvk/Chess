@@ -13,20 +13,6 @@
             this.CanBeTakenEnPassant = status;
         }
 
-        public override void ChangeEnPassantStatusForAllPawnsToFalse(Board board)
-        {
-            for (int row = 0; row < Board.BoardSize; row++)
-            {
-                for (int col = 0; col < Board.BoardSize; col++)
-                {
-                    ChessPiece piece = board.GetPieceAt(row, col);
-                    if (piece is Pawn)
-                    {
-                        piece.ChangeEnPassantStatus(false);
-                    }
-                }
-            }
-        }
 
         public override ChessPiece Clone()
         {
@@ -92,7 +78,7 @@
                     this.AddToPossibleMoveList(attackRightRow, attackRightCol);
 
                 }
-                this.AddToAttackList(newRow, attackRightCol);
+                this.AddToAttackList(attackRightRow, attackRightCol);
             }
 
             // En passant check
@@ -107,6 +93,7 @@
                 if (leftPiece is Pawn pawn && pawn.CanBeTakenEnPassant == true)
                 {
                     this.AddToPossibleMoveList(enPassantRow + direction, enPassantColLeft);
+                    this.AddToAttackList(enPassantRow, enPassantColLeft);
                 }
             }
 
@@ -117,9 +104,24 @@
                 if (rightPiece is Pawn pawn && pawn.CanBeTakenEnPassant == true)
                 {
                     this.AddToPossibleMoveList(enPassantRow + direction, enPassantColRight);
+                    this.AddToAttackList(enPassantRow, enPassantColRight);
                 }
             }
+            
 
+        }
+
+        public override void PossiblePiecesToAttack(Board board)
+        {
+            AttackingPieceList.Clear();
+            foreach (var attack in AttackList)
+            {
+                if (MoveList.Contains(attack))
+                {
+                    this.AddToAttackingPieceList(attack.Item1, attack.Item2);
+                }
+  
+            }
         }
 
 

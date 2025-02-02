@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Security.Authentication.ExtendedProtection;
 using System.Text;
 using System.Threading.Tasks;
@@ -103,7 +104,7 @@ namespace ChessGameConsole
             ChessPiece bk = board.GetPieceAt(3, 3);
 
             board.DebugPrintBoard();
-            board.UpdateUnderAttackPositionsCurrentPlayerIs("black");
+            board.UpdateUnderAttackPositionsOpponentPlayerIs("black");
             bk.DebugPrintMoveListToConsole();
 
         }
@@ -125,7 +126,7 @@ namespace ChessGameConsole
             ChessPiece br = board.GetPieceAt(3, 3);
 
             board.DebugPrintBoard();
-            board.UpdateUnderAttackPositionsCurrentPlayerIs("white");
+            board.UpdateUnderAttackPositionsOpponentPlayerIs("white");
             wr.DebugPrintMoveListToConsole();
 
         }
@@ -147,7 +148,7 @@ namespace ChessGameConsole
             ChessPiece bk = board.GetPieceAt(2, 2);
 
             board.DebugPrintBoard();
-            board.UpdateUnderAttackPositionsCurrentPlayerIs("black");
+            board.UpdateUnderAttackPositionsOpponentPlayerIs("black");
             bk.DebugPrintMoveListToConsole();
 
 
@@ -202,6 +203,112 @@ namespace ChessGameConsole
             bk.DebugPrintMoveListToConsole();
             Console.WriteLine("--------");
             bk.DebugPrintAttackListToConsole();
+        } 
+        
+        public void testEnpassant()
+        {
+            Board board = new();
+            for (int row = 0; row < Board.BoardSize; row++)
+            {
+                for (int col = 0; col < Board.BoardSize; col++)
+                {
+                    board.SetPieceAt(row, col, null);
+                }
+            }
+
+            board.SetPieceAt(3, 1, new Pawn("P", "wp", "white", 3, 1));
+            board.SetPieceAt(3, 0, new Pawn("P", "bp", "black", 3, 0));
+
+            ChessPiece wp = board.GetPieceAt(3, 1);
+            ChessPiece bp = board.GetPieceAt(3, 0);
+
+            wp.HasMoved = true;
+            bp.HasMoved = true;
+
+            bp.ChangeEnPassantStatus(true);
+            board.DebugPrintBoard();
+            wp.PossibleMoves(board);
+            wp.PossiblePiecesToAttack(board)
+                ;
+            wp.DebugPrintAttackPieceListToConsole();
+            Console.WriteLine("--------");
+            wp.DebugPrintAttackListToConsole();
+            Console.WriteLine("--------");
+            wp.DebugPrintMoveListToConsole();
+
         }
+
+
+        public void testHorsies()
+        {
+            Board board = new();
+            for (int row = 0; row < Board.BoardSize; row++)
+            {
+                for (int col = 0; col < Board.BoardSize; col++)
+                {
+                    board.SetPieceAt(row, col, null);
+                }
+            }
+
+            board.SetPieceAt(4, 4, new Knight("N", "wn", "white", 4, 4));
+            board.SetPieceAt(2, 5, new Knight("N", "bn", "black", 2, 5));
+
+            ChessPiece wn = board.GetPieceAt(4, 4);
+            ChessPiece bn = board.GetPieceAt(2, 5);
+
+            bn.PossibleMoves(board);
+
+
+            board.DebugPrintBoard();
+            bn.DebugPrintMoveListToConsole();
+            Console.WriteLine("--------");
+            //bn.FillAttackThisPiecesList(board);
+            bn.DebugPrintAttackListToConsole();
+
+
+        }
+
+
+        public void testKingVSPawn()
+        {
+            Board board = new();
+            for (int row = 0; row < Board.BoardSize; row++)
+            {
+                for (int col = 0; col < Board.BoardSize; col++)
+                {
+                    board.SetPieceAt(row, col, null);
+                }
+            }
+
+            board.SetPieceAt(4, 3, new Pawn("P", "bp", "black", 4, 3));
+            board.SetPieceAt(4, 4, new Pawn("P", "bp", "black", 4, 4));
+            board.SetPieceAt(0, 3, new Queen("Q", "bq", "black", 0, 3));
+            board.SetPieceAt(5, 4, new King("K", "wk", "white", 5, 4));
+            ChessPiece king = board.GetPieceAt(5, 4);
+            king.PossibleAttackSquaresKing(board);
+            king.PossibleMoves(board);
+            king.PossiblePiecesToAttack(board);
+
+            board.DebugPrintBoard();
+            king.DebugPrintAttackListToConsole();
+            Console.WriteLine();
+            king.DebugPrintAttackPieceListToConsole();
+            Console.WriteLine();
+            king.DebugPrintMoveListToConsole();
+        }
+
+        public void bingoCard()
+        {
+            BingoClass bingo = new();
+            for (int i = 0; i < 10; i++)
+            {
+                bingo.CreateGrid();
+                bingo.DebugPrintCard();
+                Console.WriteLine();
+            }
+            
+        }
+
+
     }
 }

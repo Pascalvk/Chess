@@ -1,0 +1,40 @@
+﻿@using ChessBlazorServer.Classes
+@using System.Linq;
+@using System.Threading.Tasks;
+@page "/puzzle"
+
+<link href="css/puzzle.css" rel="stylesheet">
+<h3>Puzzle</h3>
+
+<div class="puzzle-board">
+    @for (int row = 0; row < 5; row++)
+    {
+        @for (int col = 0; col < 5; col++)
+        {
+            <div class="puzzle-square">
+
+            </div>
+        }
+    }     
+</div>
+
+<h3></h3>
+
+<div class="puzzle-piece-large">
+    <div class="puzzle-piece-square plus-puzzle"></div>
+    <div class="puzzle-piece-square star-puzzle"></div>
+    <div class="puzzle-piece-square diamond-puzzle"></div>
+</div>
+
+<h3></h3>
+
+<div class="puzzle-piece-small">
+    <div class="puzzle-piece-square greatstar-puzzle"></div>
+    <div class="puzzle-piece-square circle-puzzle"></div>
+</div>
+
+
+@code {
+
+
+}

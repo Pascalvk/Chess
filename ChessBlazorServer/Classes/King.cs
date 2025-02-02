@@ -1,4 +1,6 @@
-﻿namespace ChessBlazorServer.Classes
+﻿using System.Linq;
+
+namespace ChessBlazorServer.Classes
 {
     public class King : ChessPiece
     {
@@ -24,6 +26,7 @@
         public override void PossibleMoves(Board board)
         {
             MoveList.Clear();
+            AttackList.Clear();
             (int startRow, int startCol) = this.Position;
             var directions = new List<(int rowChange, int colChange)>
             {
@@ -42,6 +45,47 @@
             {
                 CalculateMovesInDirection(board, startRow, startCol, rowChange, colChange);
             }
+
+            // Castling
+            if (!this.HasMoved)
+            {
+                // Gets the start position
+                var piece = board.GetPieceAt(startRow, startCol);
+
+                if (piece.Position == (7,4) || piece.Position == (0, 4))
+                {
+                    // Right               
+                    if (board.GetPieceAt(startRow, startCol + 1).Name == "Empty" && board.GetPieceAt(startRow, startCol + 2).Name == "Empty")
+                    {
+                        if (board.GetPieceAt(startRow, startCol + 3).Name == "R" && !board.GetPieceAt(startRow, startCol + 3).HasMoved)
+                        {
+                            string opponentColor = (this.Color == "white") ? "black" : "white";
+                            board.UpdateUnderAttackPositionsOpponentPlayerIs(opponentColor, true);
+                            if (!board.UnderAttackPositions.Contains((startRow, startCol + 1)) && !board.UnderAttackPositions.Contains((startRow, startCol + 2)))
+                            {
+                                this.AddToPossibleMoveList(startRow, startCol + 2);
+                            }
+                        }
+                    }
+
+                    // Left
+                    if (board.GetPieceAt(startRow, startCol - 1).Name == "Empty" && board.GetPieceAt(startRow, startCol - 2).Name == "Empty" && board.GetPieceAt(startRow, startCol - 3).Name == "Empty")
+                    {
+                        if (board.GetPieceAt(startRow, startCol - 4).Name == "R" && !board.GetPieceAt(startRow, startCol - 4).HasMoved)
+                        {
+                            string opponentColor = (this.Color == "white") ? "black" : "white";
+                            board.UpdateUnderAttackPositionsOpponentPlayerIs(opponentColor, true);
+                            if (!board.UnderAttackPositions.Contains((startRow, startCol - 1)) && !board.UnderAttackPositions.Contains((startRow, startCol - 2)) && !board.UnderAttackPositions.Contains((startRow, startCol - 3)))
+                            {
+                                this.AddToPossibleMoveList(startRow, startCol - 2);
+                            }
+                        }
+                    }
+                }
+
+            }
+
+
         }
 
         // king does a +1 gamestate to control wether it can move to the sqaure; it cant put itself into check
@@ -58,24 +102,17 @@
                 var pieceAtPosition = board.GetPieceAt(newRow, newCol);
                 // if empty or enemy
                 if (pieceAtPosition.Name == "Empty" || pieceAtPosition.Color != this.Color)
-                {                
-                    string oppenentColor = "";
-                    if (this.Color == "white")
-                    {
-                        oppenentColor = "black";
-                    }
-                    if (this.Color == "black")
-                    {
-                        oppenentColor = "white";
-                    }
+                {
+                    this.AddToAttackList(newRow, newCol);
 
+                    string opponentColor = (this.Color == "white") ? "black" : "white";
                     MoveSimulator copiedBoard = new(board);
                     copiedBoard.MovePieceToNewPositionOnBoard(startRow, startCol, newRow, newCol);
-                    copiedBoard.UpdateUnderAttackPositionsCurrentPlayerIs(oppenentColor, true);
+                    copiedBoard.UpdateUnderAttackPositionsOpponentPlayerIs(opponentColor, true);
                     if (copiedBoard.IsUnderAttack(newRow, newCol) == false)
                     {
                         this.AddToPossibleMoveList(newRow, newCol);
-                        
+                                                
                     }
                 }
             }
@@ -125,7 +162,58 @@
                 // if empty or enemy
                 if (pieceAtPosition.Name == "Empty" || pieceAtPosition.Color != this.Color)
                 {
+
                     this.AddToAttackList(newRow, newCol);
+
+                }
+            }
+        }
+
+        public override void PossiblePiecesToAttack(Board board)
+        {
+            AttackingPieceList.Clear();
+            
+            (int startRow, int startCol) = this.Position;
+            var directions = new List<(int rowChange, int colChange)>
+            {
+                (-1, 0), // Up
+                (1, 0),  // Down
+                (0, 1),  // Right
+                (0, -1), // Left
+                (-1, -1), // Diagonal left up
+                (-1, 1),  // Diagonal right up
+                (1, -1),  // Diagonal left down
+                (1, 1)    // Diagonal right down
+            };
+
+            // Loop through each direction and calculate possible moves
+            foreach (var (rowChange, colChange) in directions)
+            {
+                CalculateAttackingPiecesInDirection(board, startRow, startCol, rowChange, colChange);
+            }
+            
+        }
+
+        public void CalculateAttackingPiecesInDirection(Board board, int startRow, int startCol, int rowChange, int colChange)
+        {
+            
+            // Gets the start position
+            var piece = board.GetPieceAt(startRow, startCol);
+
+            // New position
+            int newRow = startRow + rowChange;
+            int newCol = startCol + colChange;
+            if (board.IsWithinBounds(newRow, newCol))
+            {
+                var pieceAtPosition = board.GetPieceAt(newRow, newCol);
+ 
+                if (pieceAtPosition.Name != "Empty" && pieceAtPosition.Color != this.Color)
+                {
+                    if (MoveList.Contains((newRow, newCol)))
+                    {
+                        this.AddToAttackingPieceList(newRow, newCol);
+                    }
+
                 }
             }
         }

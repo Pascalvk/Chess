@@ -1,5 +1,10 @@
 ﻿@using ChessBlazorServer.Classes
+@using System.Linq;
+@using System.Threading.Tasks;
 @page "/chess"
+@code {
+    [Parameter] public bool isWhiteBottom { get; set; } = true; // Standaard is wit onderaan
+}
 
 <link href="css/chessGame.css" rel="stylesheet">
 <h3>Chess</h3>
@@ -12,14 +17,44 @@ Als je dit leest werkt de link
 <div class="chess-board">
     @for (int row = 0; row < Board.BoardSize; row++)
     {
+        int displayRow = isWhiteBottom ? row : Board.BoardSize - 1 - row;
+
         @for (int col = 0; col < Board.BoardSize; col++)
         {                 
             ChessPiece thisPiece = board.GetPieceAt(row, col);
             (int, int) id = (row, col);
             string possibleMoveDot = "";
             string backGroundSquare = "";
+            string isDraggable = "false";
 
-            @if ((row + col) % 2 == 0)
+
+            if (isDragging && currentlyDraggingPiecePos == id)
+            {
+                visibilityPiece = "invisible";
+            }
+            else
+            {
+                visibilityPiece = "visible";
+            }
+
+
+            @if (thisPiece.SVGName != "")
+            {
+                isDraggable = "true";
+
+            }
+            if (gameLogic.currentPlayer == thisPiece.Color)
+            {
+                cursorSybmbol = "cursorDrag";
+            }
+            else
+            {
+                cursorSybmbol = "";
+            }
+
+
+
+            @if ((displayRow + col) % 2 == 0)
             {
                 backGroundSquare = "light-square";
             }
@@ -41,28 +76,90 @@ Als je dit leest werkt de link
                 {
                     possibleMoveDot = "PossibleMoveDot";
                 }
+                if (selectedPiece is Pawn && isAttackingPosition)
+                {
+                    possibleMoveDot = "TakeThisCircle";
+                }
 
-                if (selectedPiece.Position == id)
+                if (board.IsInCheck && board.IsInCheckColor == thisPiece.Color && thisPiece.Name == "K")
+                {
+                    backGroundSquare = "check-square";
+                }
+
+                if (selectedPiece.Position == id || gameLogic.LastMoveFromToLocation[0] == id || gameLogic.LastMoveFromToLocation[1] == id)
                 {
                     backGroundSquare = "select-square";
+                }
+
+
+                if (isSelected && currentlyDraggingOverSquare == id)
+                {
+                    moveToSquare = "MoveToSquare";
+                }
+                else
+                {
+                    moveToSquare = "";
                 }
             }
 
 
-            <div class="@backGroundSquare @thisPiece.SVGName" 
-            id="@id"
-            @onclick="() => OnClick(id)"
-            
+            <div class="@backGroundSquare" id="@id" @ondragover="() => OnDragOver(id)">
+                <div class="square @thisPiece.SVGName @cursorSybmbol @visibilityPiece"
+                     draggable="@isDraggable"
+                     @onclick="() => OnClick(id)"
+                     @ondragstart="() => OnDragStart(id)"
+                     @ondragend="() => OnDragEnd()">
+
+                    <div class="@moveToSquare"></div>
+                    <div class="@possibleMoveDot"> </div>
+                </div>
                 
-            >
-                <div class="@possibleMoveDot"></div>
             </div>
         }
     }
 </div>
 
 <div>@selectedPiece</div>
-<div> (row, col)
+<div>@currentlyDraggingOverSquare</div>
+
+<div class="chess-row">
+    PositionsUnderAttack:
+    @if (board != null)
+    {
+        //selectedPiece.FillAttackThisPiecesList(board);
+        @foreach (var moves in board.UnderAttackPositions)
+        {
+            <div>@moves</div>
+        }
+    }
+</div>
+
+<div class="chess-row"> 
+    (row, col) Moves: 
+    @if (selectedPiece != null)
+    {
+        //selectedPiece.FillAttackThisPiecesList(board);
+        @foreach (var moves in selectedPiece.MoveList)
+        {
+            <div>@moves</div>
+        }
+    }
+</div>
+
+<div class="chess-row">
+    (row, col) AttackList:
+    @if (selectedPiece != null)
+    {
+        //selectedPiece.FillAttackThisPiecesList(board);
+        @foreach (var moves in selectedPiece.AttackList)
+        {
+            <div>@moves</div>
+        }
+    }
+</div>
+
+<div class="chess-row">
+    (row, col) AttackPieces:
     @if (selectedPiece != null)
     {
         //selectedPiece.FillAttackThisPiecesList(board);
@@ -73,55 +170,179 @@ Als je dit leest werkt de link
     }
 </div>
 
+<div class="chess-row">
+    White King is at position:
+    <div>@board.GetPosOfPiece("K", "white")  </div>
+</div>
+
+<div class="chess-row">
+    CurrentPlayer: 
+    <div>@gameLogic.currentPlayer </div>
+    checkcolor:
+    <div>@board.IsInCheckColor </div>
+
+</div>
+
+@if (isPromotionPending){
+    <div class="chess-row">
+        <button @onclick="() => HandleClickQueen('Q')">Queen</button>
+        <button @onclick="() => HandleClickRook('R')">Rook</button>
+        <button @onclick="() => HandleClickBishop('B')">Bishop</button>
+        <button @onclick="() => HandleClickKnight('N')">Knight</button>
+    </div>
+}
 
 
 @code {
     Board board = new();
+    GameLogic gameLogic;
     ChessPiece selectedPiece = null;
     bool isSelected = false;
-    string currentPlayer = "white";
 
-    public void OnClick((int, int) id)
+    public bool isPromotionPending = false;
+    private TaskCompletionSource<bool> ConfirmationTaskSource;
+    char promotionChoiceChar = 'Q';
+
+    (int, int) currentlyDraggingOverSquare = (-1, -1);
+    (int, int) currentlyDraggingPiecePos = (-1, -1);
+    string moveToSquare = "";
+    string cursorSybmbol = "";
+    string visibilityPiece = "";
+ 
+    bool isDragging = false;
+
+    protected override void OnInitialized()
     {
+        base.OnInitialized();
+        gameLogic = new GameLogic(board);
+
+    }
+
+    public void HandleClickQueen(char choice)
+    {
+        promotionChoiceChar = choice;
+        ConfirmationTaskSource?.SetResult(true);
+    }
+
+    public void HandleClickRook(char choice)
+    {
+        promotionChoiceChar = choice;
+        ConfirmationTaskSource?.SetResult(true);
+    }
+
+    public void HandleClickBishop(char choice)
+    {
+        promotionChoiceChar = choice;
+        ConfirmationTaskSource?.SetResult(true);
+    }
+
+    public void HandleClickKnight(char choice)
+    {
+        promotionChoiceChar = choice;
+        ConfirmationTaskSource?.SetResult(true);
+    }
+
+
+    public async Task OnDragStart((int, int) id)
+    {
+        isDragging = true;
+        currentlyDraggingPiecePos = id;
         ChessPiece clickedPiece = board.GetPieceAt(id.Item1, id.Item2);
 
-        if (!isSelected)
+        if (!isPromotionPending)
         {
-            SelectPiece(id);
 
-            if (selectedPiece != board.EmptyChessPiece && selectedPiece.Color == currentPlayer)
+            // Select a piece
+            if (!isSelected)
             {
-                isSelected = true;
+                SelectPiece(id);
+
+                if (selectedPiece != board.EmptyChessPiece && selectedPiece.Color == gameLogic.currentPlayer)
+                {
+                    isSelected = true;
+                }
+            }
+            // Change to other piece selection or move piece
+            else if (isSelected && clickedPiece.Color == gameLogic.currentPlayer)
+            {
+                SelectPiece(id);
+
             }
         }
+    }
 
-        else if (isSelected && clickedPiece.Color == currentPlayer)
+    public void OnDragOver((int, int) id)
+    {
+        currentlyDraggingOverSquare = id;
+        
+    }
+
+    public async Task OnDragEnd()
+    {
+        
+        if (selectedPiece.MoveList.Contains(currentlyDraggingOverSquare))
         {
-            SelectPiece(id);
+            await MoveLogic(currentlyDraggingOverSquare);
         }
-        else
+        isDragging = false;
+        currentlyDraggingOverSquare = (-1, -1);
+        currentlyDraggingPiecePos = (-1, -1);
+    }
+
+    public async Task OnClick((int, int) id)
+    {
+
+        ChessPiece clickedPiece = board.GetPieceAt(id.Item1, id.Item2);
+
+        if (!isPromotionPending)
         {
-            MoveLogic(id);
+
+            // Select a piece
+            if (!isSelected)
+            {
+                SelectPiece(id);
+
+                if (selectedPiece != board.EmptyChessPiece && selectedPiece.Color == gameLogic.currentPlayer)
+                {
+                    isSelected = true;
+                }
+            }
+
+            // Change to other piece selection or move piece
+            else if (isSelected && clickedPiece.Color == gameLogic.currentPlayer)
+            {
+                SelectPiece(id);
+
+            }
+            else
+            {
+                await MoveLogic(id);
+            }
+
         }
+
     }
 
 
     public void SelectPiece((int,int) id)
     {
         ChessPiece pieceAtLocation = board.GetPieceAt(id.Item1, id.Item2);
-        if (pieceAtLocation != board.EmptyChessPiece && pieceAtLocation.Color == currentPlayer)
+        if (pieceAtLocation != board.EmptyChessPiece && pieceAtLocation.Color == gameLogic.currentPlayer)
         {
             selectedPiece = pieceAtLocation;
             if (selectedPiece is King)
             {
-                selectedPiece.PossibleAttackSquaresKing(board);
-                selectedPiece.PossibleMoves(board);
-                selectedPiece.FillAttackThisPiecesList(board);
+                King king = selectedPiece as King;
+                //king.PossibleAttackSquaresKing(board);
+                king.PossibleMoves(board);
+                king.PossiblePiecesToAttack(board);
             }
             else
             {
                 selectedPiece.PossibleMoves(board);
-                selectedPiece.FillAttackThisPiecesList(board);
+                selectedPiece.KeepOrRemoveMovesForProtectingKing(board);
+                selectedPiece.PossiblePiecesToAttack(board);
+                selectedPiece.RemoveAttackingPiecesWhenNotInMoveList(board);
             }
         }
         else
@@ -130,8 +351,55 @@ Als je dit leest werkt de link
         }
     }
 
-    public void MoveLogic((int, int) moveToLocation)
+    private async Task<bool> WaitForUserConfirmation()
     {
+        ConfirmationTaskSource = new TaskCompletionSource<bool>();
+        return await ConfirmationTaskSource.Task;
+    }
+
+    public async Task MoveLogic((int, int) moveToLocation)
+    {
+        if (selectedPiece.IsMoveValid(moveToLocation))
+        {
+            // Promotion
+            if (selectedPiece is Pawn)
+            {
+                if (moveToLocation.Item1 == 0 || moveToLocation.Item1 == 7)
+                {
+                    isPromotionPending = true;
+                    StateHasChanged();
+
+                    await WaitForUserConfirmation();
+
+                    isPromotionPending = false; 
+                    StateHasChanged();
+                }
+            }
+
+            // Moves piece and changed player
+            gameLogic.MovePiece(selectedPiece, moveToLocation, promotionChoiceChar.ToString());
+            selectedPiece = board.EmptyChessPiece;
+            isSelected = false;
+
+            // handle check and checkmate
+            board.IsKingInCheck(gameLogic.currentPlayer, gameLogic.opponentPlayer);
+            board.IsKingCheckMated(gameLogic.currentPlayer);
+ 
+            /*
+            if (board.IsInCheck && !board.IsCheckMate)
+            {
+                var pos = board.GetPosOfPiece("K", gameLogic.currentPlayer);
+                SelectPiece(pos);
+                isSelected = true;
+                
+            }
+            */
+
+
+        }
+
+
+        /*
         // Everything in the if statement is a valid move
         if (selectedPiece != board.EmptyChessPiece && selectedPiece.IsMoveValid(moveToLocation))
         {
@@ -141,43 +409,49 @@ Als je dit leest werkt de link
             // Determine if the move is a single step or a double step
             int rowDifference = moveToLocation.Item1 - currentRow;
 
-            // Check if it's a pawn and if it's moving 2 spaces
+            // Check if it's a pawn and if it's moving 2 spaces or side attack
             if (selectedPiece is Pawn pawn)
             {
-
+                // A sideway attack
                 if (currentCol != moveToLocation.Item2)
                 {
                     ChessPiece enPassantablePawn = board.GetEnPassantablePiece();
                     if (enPassantablePawn != null)
                     {
-                        int deleteRow = enPassantablePawn.Position.Row;
-                        int deleteCol = enPassantablePawn.Position.Col;
-                        board.RemovePieceAt(deleteRow, deleteCol);
+                        if (selectedPiece.AttackList.Contains(enPassantablePawn.Position) && moveToLocation.Item2 == enPassantablePawn.Position.Col)
+                        {
+                            int deleteRow = enPassantablePawn.Position.Row;
+                            int deleteCol = enPassantablePawn.Position.Col;
+                            board.RemovePieceAt(deleteRow, deleteCol);
+                        }             
+
                     }
                 }
-                // Remove the can be taken en passant bool; only last 1 move for opponent
-                pawn.ChangeEnPassantStatusForAllPawnsToFalse(board);
-                // Marks the moved pawn as enpassantable
+
+                // Marks the moved pawn as enpassantable; 2 places forward
                 if (!pawn.HasMoved && Math.Abs(rowDifference) == 2)
                 {
-                    pawn.ChangeEnPassantStatus(true);
+                    selectedPiece.ChangeEnPassantStatus(true);
                 }
 
             }
 
             board.MovePieceToNewPositionOnBoard(currentRow, currentCol, moveToLocation.Item1, moveToLocation.Item2);
             selectedPiece.MarkAsMoved();
+            board.RemoveEnPassantStatusForColor(opponentPlayer);
 
             currentPlayer = currentPlayer == "white" ? "black" : "white";
+            
 
             selectedPiece = board.EmptyChessPiece;
             isSelected = false;
         }
         else
         {
-            selectedPiece = board.EmptyChessPiece;
-            isSelected = false;
+            //selectedPiece = board.EmptyChessPiece;
+            //isSelected = false;
         }
+        */
     }
 
 }

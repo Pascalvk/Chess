@@ -6,6 +6,23 @@ using System.Reflection;
 Console.WriteLine("Hello, World!");
 TestMethods testMethods = new TestMethods();
 
+testMethods.bingoCard();
+
+
+/*
+testMethods.testEnpassant();
+
+/*
+testMethods.testKingVSPawn();
+
+/*
+testMethods.testHorsies();
+
+/*
+testMethods.testEnpassant();
+
+
+/*
 testMethods.testInstantinCheck();
 /* 
 testMethods.testAgainstQueenandKing();

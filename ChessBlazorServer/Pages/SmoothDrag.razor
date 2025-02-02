@@ -1,0 +1,105 @@
+﻿@using ChessBlazorServer.Classes
+@using System.Linq;
+@using System.Threading.Tasks;
+@page "/smoothdrag"
+
+<head>
+    <script src="JS/jsHelperFunctions.js"></script>
+</head>
+
+<link href="css/smoothDrag.css" rel="stylesheet">
+
+<h3>SmoothDrag</h3>
+
+
+<div class="smoothDragContainer">
+
+    <div class="smoothDragBackgroundContainer">
+        @for (int row = 0; row < 8; row++)
+        {
+            @for (int col = 0; col < 8; col++)
+            {
+                string backgroundColor = "";
+                @if ((row + col) % 2 == 0)
+                {
+                    backgroundColor = "smoothDragWhite";
+                }
+                else
+                {
+                    backgroundColor = "smoothDragBlack";
+                }
+
+                <div class="smoothDragSquare @backgroundColor">
+
+                </div>
+            }
+        }
+
+
+    </div>
+
+    <div class="smoothDragOverlay">
+        @for (int row = 0; row < 8; row++)
+        {
+            @for (int col = 0; col < 8; col++)
+            {
+                string piece = "";
+                @if (row == 0 && col == 0)
+                {
+                    piece = "smoothWQ";
+                    styleString = $"transform: translate({700}%, {0}%);";
+                }
+                else
+                {
+                    styleString = "";
+                }
+                <div class="smoothDragSquare" 
+                     @onmousedown="MouseDown"
+                     @onmousemove="MouseMove"
+                     @onmouseup="MouseUp"
+                     
+                     >
+                    <div class="@piece" style="@styleString">
+
+                    </div>
+                </div>
+            }
+        }
+
+    </div>
+
+</div>
+
+
+<button @onclick="OnClick">click me!</button>
+<div> @isDragging</div>
+
+
+@code {
+    string styleString = "";
+    public bool isDragging = false;
+
+    public void OnClick()
+    {
+        styleString = $"transform: translate({700}%, {0}%);";
+    }
+
+    public void MouseDown()
+    {
+        isDragging = true;
+    }
+
+    public void MouseMove()
+    {
+        if (isDragging)
+        {
+            
+        }
+    }
+
+    public void MouseUp()
+    {
+        isDragging = false;
+    }
+
+}

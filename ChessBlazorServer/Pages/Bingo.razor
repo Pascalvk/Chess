@@ -1,0 +1,277 @@
+﻿@using ChessBlazorServer.Classes
+@using System.Linq;
+@using System.Threading.Tasks;
+@page "/bingo"
+
+<link href="css/bingocard.css" rel="stylesheet">
+
+<h3>Bingo</h3>
+
+<div class="bingoBox @eraserCursor">
+    <div class="bingoBoard">
+        @for (int row = 0; row < 5; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                if (mainGrid != null)
+                {
+                    if (mainGrid[row, col] == 1)
+                    {
+                        color = "bingoYellow";
+                    }
+                    else if (mainGrid[row, col] == 2)
+                    {
+                        color = "bingoPurple";
+                    }
+                    else if (mainGrid[row, col] == 3)
+                    {
+                        color = "bingoGreen";
+                    }
+                    else if (mainGrid[row, col] == 4)
+                    {
+                        color = "bingoBlue";
+                    }
+                    else if (mainGrid[row, col] == 5)
+                    {
+                        color = "bingoPink";
+                    }
+                    <div class="bingoSquare @color"></div>
+                }
+            }
+        }
+    </div>
+    <div class="bingoBoardOverlay">
+        
+        @if (mainGrid != null)
+        {
+            @for (int row = 0; row < 5; row++)
+            {
+                for (int col = 0; col < 5; col++)
+                {
+                    string crossToUse = "";
+                    string moveTo = "";
+                    var id = (row, col);
+                    if (crossedOfGrid != null)
+                    {
+                        if (crossedOfGrid[row, col] == 1)
+                        {
+                            crossToUse = $"cross1";
+                        }                      
+                        else if (crossedOfGrid[row, col] == 2)
+                        {
+                            crossToUse = $"cross2";
+                        }
+                        else if (crossedOfGrid[row, col] == 3)
+                        {
+                            crossToUse = $"cross3";
+                        }
+                        else if (crossedOfGrid[row, col] == 4)
+                        {
+                            crossToUse = $"cross4";
+                        }
+                        else if (crossedOfGrid[row, col] == 5)
+                        {
+                            crossToUse = $"cross5";
+                        }
+
+                        if(currentlyHoveringOver == (row, col))
+                        {
+                            moveTo = "MoveToSquare";
+                        }
+                    }
+
+                    <div class="bingoSquareOverlay @crossToUse" @onclick="() => ClickSquare(id)" @onmouseover="() => MouseOver(id)">
+                        <div class="bingoSquareOverlay @moveTo"></div>
+                    </div>
+                    
+                    
+                }
+            }
+        }
+
+
+    </div>
+
+</div>
+
+
+<button class="button-64" @onclick="OnClickChangeButton">Change bingo card</button>
+
+<div class="rowSelect">
+    @for (int i = 0; i < CardOptions.Count; i++)
+    {
+        int id = i;
+        gridSelect = CardOptions[i];
+        <div class="bingoBoardSelect hand-cursor" @onclick="() => ThisIsSelected(id)">
+            @for (int row = 0; row < 5; row++)
+            {
+                for (int col = 0; col < 5; col++)
+                {
+                    if (gridSelect[row, col] == 1)
+                    {
+                        color = "bingoYellow";
+                    }
+                    else if (gridSelect[row, col] == 2)
+                    {
+                        color = "bingoPurple";
+                    }
+                    else if (gridSelect[row, col] == 3)
+                    {
+                        color = "bingoGreen";
+                    }
+                    else if (gridSelect[row, col] == 4)
+                    {
+                        color = "bingoBlue";
+                    }
+                    else if (gridSelect[row, col] == 5)
+                    {
+                        color = "bingoPink";
+                    }
+
+                    <div class="bingoSquareSelect @color"></div>
+
+                }
+            }
+        </div>
+    }    
+</div>
+
+@if (showConfirmation)
+{
+    <div class="popup-overlay">
+        <div class="popup">
+            <h3>Are you sure?</h3>
+            <p>The old card will be replaced with the new one!</p>
+            <p>Current crosses will be removed!</p>
+            <p>Do you want to continue?</p>
+            <button @onclick="ConfirmAction">Yes (replace old card)</button>
+            <button @onclick="CancelAction">No (keep old card)</button>
+        </div>
+    </div>
+}
+
+@if (isEraserActive)
+{
+    <button @onclick="EraserActivate">Brush</button>
+}
+else
+{
+    <button @onclick="EraserActivate">Eraser</button>
+}
+
+
+
+<button @onclick="ClearCard">ClearCard</button>
+
+<div>@CardOptions.Count</div>
+
+
+@code {
+    string color = "";
+    string eraserCursor = "brush-cursor";
+    int[,] gridSelect;
+    int[,] mainGrid;
+    int[,] crossedOfGrid = new int[5, 5];
+    public List<int[,]> CardOptions = new();
+    BingoClass bingo;
+    Random random = new();
+    bool isEraserActive = false;
+    bool showConfirmation = false;
+    private Action? confirmAction;
+    (int, int) currentlyHoveringOver = (-1, -1);
+
+    protected override void OnInitialized()
+    {
+        NewCards();
+    }
+
+    public void OnClickChangeButton()
+    {
+        NewCards();
+    }
+
+    public void NewCards()
+    {
+        CardOptions.Clear();
+        @for (int i = 0; i < 5; i++)
+        {
+            bingo = new();
+            int[,] gridInitial = bingo.CreateGrid();
+            CardOptions.Add(gridInitial);
+        }
+
+    }
+
+    public void ThisIsSelected(int id)
+    {
+        if (mainGrid == null)
+        {
+            mainGrid = CardOptions[id];
+
+        }
+        else
+        {
+            confirmAction = () => mainGrid = CardOptions[id];
+            showConfirmation = true;
+
+        }
+
+    }
+
+    public void ClickSquare((int, int) id)
+    {
+        if (!isEraserActive)
+        {
+            if (crossedOfGrid[id.Item1, id.Item2] == 0)
+            {
+                int randomNumber = random.Next(1, 6);
+                crossedOfGrid[id.Item1, id.Item2] = randomNumber;
+            }
+        }
+        else
+        {
+            crossedOfGrid[id.Item1, id.Item2] = 0;
+        }
+
+    }
+
+    public void MouseOver((int, int) id)
+    {
+        currentlyHoveringOver = id;
+    }
+
+    public void EraserActivate()
+    {
+        if (!isEraserActive)
+        {
+            isEraserActive = true;
+            eraserCursor = "gum-cursor";
+        }
+        else
+        {
+            isEraserActive = false;
+            eraserCursor = "brush-cursor";
+        }
+    }
+
+    public void ClearCard()
+    {
+        crossedOfGrid = new int[5, 5];
+    }
+
+    private void ConfirmAction()
+    {
+        showConfirmation = false;
+        confirmAction?.Invoke();
+        ClearCard();
+    }
+
+    private void CancelAction()
+    {
+        showConfirmation = false;
+    }
+
+
+}
+
+

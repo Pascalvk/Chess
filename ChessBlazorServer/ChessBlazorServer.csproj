@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\SVG\Chess\" />
+    <Folder Include="wwwroot\SVG\Bingo\" />
+    <Folder Include="wwwroot\SVG\Puzzle\" />
   </ItemGroup>
 
 </Project>

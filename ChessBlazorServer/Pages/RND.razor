@@ -1,0 +1,182 @@
+﻿@using ChessBlazorServer.Classes
+@using System.Linq;
+@using System.Threading.Tasks;
+@inject IJSRuntime JSRuntime
+
+@page "/rnd"
+<head>
+    <script src="JS/jsHelperFunctions.js"></script>
+</head>
+<link href="css/rnd.css" rel="stylesheet">
+
+<h3>RND</h3>
+
+<div class="rnd-chess-container">
+    <!-- Bordlaag -->
+    <div class="rnd-chess-board">
+        @for (int row = 0; row < 8; row++)
+        {
+            @for (int col = 0; col < 8; col++)
+            {
+                string backGroundSquare = "";
+                @if ((row + col) % 2 == 0)
+                {
+                    backGroundSquare = "rnd-white";
+                }
+                else
+                {
+                    backGroundSquare = "rnd-black";
+                }
+
+                <div class="rnd-square @backGroundSquare"></div>
+            }
+        }
+    </div>
+
+    <!-- Overlay-laag voor zetten/stukken -->
+    <div class="rnd-overlay" id="overlay">
+        @for (int row = 0; row < 8; row++)
+        {
+            @for (int col = 0; col < 8; col++)
+            {
+                string queen = "";
+                string isDraggable = "false";
+                (int, int) id = (row * 100, col * 100);
+                if ((col, row) == (0, 0))
+                {
+                    queen = "rnd-wq";
+                    isDraggable = "true";
+                }
+                else
+                {
+                    //styleToUse = $"transform: translate({id.Item1}, {id.Item2});";
+                }
+                <div class="rnd-piece @queen"
+                     id="@id"
+                     style="@($"transform: translate({(row * 100) + relativeX}px, {(col * 100) + relativeY}px);")"
+                     @onmousedown="(e) => StartDrag(e)"
+                     @onmouseup="(e) => StopDrag(e)"
+                     
+                ></div>
+            }
+        }
+    </div>
+</div>
+<div>ClientX: @clientX</div>
+<div>RelatieveX: @relativeX</div>
+<div>RelatieveY: @relativeY</div>
+<div>CLientY: @clientY</div>
+<div>-----------------------</div>
+<div>ScrollX: @scrollx</div>
+<div>ScrollY: @scrolly</div>
+<div>-----------------------</div>
+
+<p>Top: @top</p>
+<p>Left: @left</p>
+<p>Width: @width</p>
+<p>Height: @height</p>
+<p>dragging: @isDragging</p>
+<p>offsetX: @offsetX</p>
+<p>offsetY: @offsetY</p>
+<p>StyleToUse: @styleToUse</p>
+
+<div class="rnd-crazy-square" id="test" @onmousemove="(e) => MousePostion(e)" @onmouseup="(e) => StopDrag(e)">
+    <div class="rnd-block"
+         style="@styleToUse"
+         @onmousedown="(e) => StartDrag(e)"
+         @onmouseup="(e) => StopDrag(e)">
+
+    </div>
+
+</div>
+
+@code {
+    private double top;
+    private double left;
+    private double width;
+    private double height;
+    private double scrollx;
+    private double scrolly;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        /*
+        if (firstRender)
+        {
+            await Task.Delay(5000);
+            var boundingBox = await JSRuntime.InvokeAsync<BoundingBox>("getElementBoundingBox", "test");
+
+            top = boundingBox.Top;
+            left = boundingBox.Left;
+            width = boundingBox.Width;
+            height = boundingBox.Height;
+            scrollx = boundingBox.ScrollX;
+            scrolly = boundingBox.ScrollY;
+        }
+        */
+    }
+
+    public class BoundingBox
+    {
+        public double Top { get; set; }
+        public double Left { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+        public double ScrollX { get; set; }
+        public double ScrollY { get; set; }
+    }
+
+
+    private bool isDragging = false; // Indicator voor of we slepen
+    private string styleToUse = ""; // Dynamische style voor de positie van het stuk
+    public double offsetX, offsetY; // Offset van de muispositie bij drag-start
+
+    public double relativeX = 0;
+    public double relativeY = 0;
+
+    public double clientX = 0;
+    public double clientY = 0;
+
+
+
+    private void StartDrag(MouseEventArgs e)
+    {
+        isDragging = true;
+
+
+
+    }
+
+    private async Task MousePostion(MouseEventArgs e)
+    { 
+        var boundingBox = await JSRuntime.InvokeAsync<BoundingBox>("getElementBoundingBox", "test");
+        top = boundingBox.Top;
+        left = boundingBox.Left;
+        width = boundingBox.Width;
+        height = boundingBox.Height;
+        scrollx = boundingBox.ScrollX;
+        scrolly = boundingBox.ScrollY;
+
+
+        clientX = e.ClientX + scrollx;
+        clientY = e.ClientY + scrolly;
+
+        // Bewaar de offset tussen de muispositie en het beginpunt van het stuk
+        relativeX = clientX - left;
+        relativeY = clientY - top;     
+
+        relativeX = Math.Max(0, Math.Min(relativeX, width));
+        relativeY = Math.Max(0, Math.Min(relativeY, height));
+        StateHasChanged();
+
+        // Update de stijl om het element te verplaatsen
+        //styleToUse = $"position: absolute; left: {}px; top: {}px;";
+        
+    }
+
+    private void StopDrag(MouseEventArgs e)
+    {
+        isDragging = false;
+        styleToUse = ""; // Reset de style als het stuk is losgelaten
+    }
+}

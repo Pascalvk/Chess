@@ -25,6 +25,7 @@
         {
             MoveList.Clear();
             AttackList.Clear();
+            AttackingPieceList.Clear();
             (int startRow, int startCol) = this.Position;
 
             var directions = new List<(int rowChange, int colChange)>
@@ -44,10 +45,16 @@
                     if (pieceAtPosition.Name == "Empty" || pieceAtPosition.Color != this.Color)
                     {
                         this.AddToPossibleMoveList(newRow, newCol);
-                        this.AddToAttackList(newRow, newRow);
+                        this.AddToAttackList(newRow, newCol);
                     }
+                    if (pieceAtPosition.Name != "Empty" && pieceAtPosition.Color != this.Color)
+                    {
+                        this.AddToAttackingPieceList(newRow, newCol);
+                    }
+
                 }
             }
+
         }
 
 
